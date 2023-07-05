@@ -5,7 +5,7 @@ import os
 import numpy as np
 from itertools import chain
 import torch
-from tensorboardX import SummaryWriter
+from tensorboard import SummaryWriter  # TODO: tensorboardX -> tensorboard
 
 from onpolicy.utils.separated_buffer import SeparatedReplayBuffer
 from onpolicy.utils.util import update_linear_schedule
@@ -38,13 +38,13 @@ class Runner(object):
         self.use_render = self.all_args.use_render
         self.recurrent_N = self.all_args.recurrent_N
 
-        # interval
+        # interval(各个任务的间隔)
         self.save_interval = self.all_args.save_interval
         self.use_eval = self.all_args.use_eval
         self.eval_interval = self.all_args.eval_interval
         self.log_interval = self.all_args.log_interval
 
-        # dir
+        # dir(存储模型的目录)
         self.model_dir = self.all_args.model_dir
 
         if self.use_render:
@@ -73,6 +73,7 @@ class Runner(object):
 
         self.policy = []
         for agent_id in range(self.num_agents):
+            # share_observation_space: mpe_from_openai中没有
             share_observation_space = self.envs.share_observation_space[agent_id] if self.use_centralized_V else self.envs.observation_space[agent_id]
             # policy network
             po = Policy(self.all_args,
@@ -80,15 +81,15 @@ class Runner(object):
                         share_observation_space,
                         self.envs.action_space[agent_id],
                         device = self.device)
-            self.policy.append(po)
+            self.policy.append(po)  # 每一个agent创建了一个policy
 
         if self.model_dir is not None:
-            self.restore()
+            self.restore()  # 在训练前加载模型
 
         self.trainer = []
         self.buffer = []
         for agent_id in range(self.num_agents):
-            # algorithm
+            # algorithm，这里才是真正的算法
             tr = TrainAlgo(self.all_args, self.policy[agent_id], device = self.device)
             # buffer
             share_observation_space = self.envs.share_observation_space[agent_id] if self.use_centralized_V else self.envs.observation_space[agent_id]

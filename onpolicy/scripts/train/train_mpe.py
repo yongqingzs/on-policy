@@ -14,6 +14,9 @@ from onpolicy.envs.env_wrappers import SubprocVecEnv, DummyVecEnv
 """Train script for MPEs."""
 
 def make_train_env(all_args):
+    """
+    创建用于训练的env
+    """
     def get_env_fn(rank):
         def init_env():
             if all_args.env_name == "MPE":
@@ -25,13 +28,16 @@ def make_train_env(all_args):
             env.seed(all_args.seed + rank * 1000)
             return env
         return init_env
-    if all_args.n_rollout_threads == 1:
+    if all_args.n_rollout_threads == 1:  # rollout的进程
         return DummyVecEnv([get_env_fn(0)])
     else:
         return SubprocVecEnv([get_env_fn(i) for i in range(all_args.n_rollout_threads)])
 
 
 def make_eval_env(all_args):
+    """
+    创建用于评估的env
+    """
     def get_env_fn(rank):
         def init_env():
             if all_args.env_name == "MPE":
@@ -44,12 +50,16 @@ def make_eval_env(all_args):
             return env
         return init_env
     if all_args.n_eval_rollout_threads == 1:
-        return DummyVecEnv([get_env_fn(0)])
+        return DummyVecEnv([get_env_fn(0)])  # sin
     else:
         return SubprocVecEnv([get_env_fn(i) for i in range(all_args.n_eval_rollout_threads)])
 
 
 def parse_args(args, parser):
+    """
+    使外部的args和内部保存的config不会发生冲突，
+    优先外部args(TODO: 有待验证)
+    """
     parser.add_argument('--scenario_name', type=str,
                         default='simple_spread', help="Which scenario to run on")
     parser.add_argument("--num_landmarks", type=int, default=3)
@@ -62,6 +72,10 @@ def parse_args(args, parser):
 
 
 def main(args):
+    """
+    atr:
+    1. runner: 实际训练使用的模块
+    """
     parser = get_config()
     all_args = parse_args(args, parser)
 
@@ -82,7 +96,7 @@ def main(args):
     assert (all_args.share_policy == True and all_args.scenario_name == 'simple_speaker_listener') == False, (
         "The simple_speaker_listener scenario can not use shared policy. Please check the config.py.")
 
-    # cuda
+    # cuda以及设置多进程
     if all_args.cuda and torch.cuda.is_available():
         print("choose to use gpu...")
         device = torch.device("cuda:0")
@@ -101,7 +115,7 @@ def main(args):
     if not run_dir.exists():
         os.makedirs(str(run_dir))
 
-    # wandb
+    # wandb(类似tensorboard)
     if all_args.use_wandb:
         run = wandb.init(config=all_args,
                          project=all_args.env_name,
@@ -149,13 +163,13 @@ def main(args):
         "run_dir": run_dir
     }
 
-    # run experiments
+    # run experiments(训练)
     if all_args.share_policy:
         from onpolicy.runner.shared.mpe_runner import MPERunner as Runner
     else:
         from onpolicy.runner.separated.mpe_runner import MPERunner as Runner
 
-    runner = Runner(config)
+    runner = Runner(config)  # 将设置好的config传入
     runner.run()
     
     # post process
@@ -171,4 +185,4 @@ def main(args):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    main(sys.argv[1:])  # 实际运行

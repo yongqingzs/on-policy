@@ -7,9 +7,18 @@ from .multi_discrete import MultiDiscrete
 # update bounds to center around agent
 cam_range = 2
 
-# environment for all agents in the multiagent world
-# currently code assumes that no agents will be created/destroyed at runtime!
+
+
 class MultiAgentEnv(gym.Env):
+    """
+    Environment for all agents in the multiagent world,
+    currently code assumes that no agents will be created/destroyed at runtime!
+
+    atr:
+    1. share_observation_space:
+    原版mpe中没有，为作者自己添加
+    """
+
     metadata = {
         'render.modes': ['human', 'rgb_array']
     }

@@ -14,13 +14,37 @@ def _t2n(x):
     return x.detach().cpu().numpy()
 
 class MPERunner(Runner):
+    """
+    atr:
+    1. trainer: 由base_runner构造
+    - 来自r_mappo.R_MAPPO
+    - 其中单个agent的policy，来自rMAPPOPolicy
+    2. use_centralized_V:
+    by default True, use centralized training mode; or else will decentralized training mode.
+    
+    NOTE:
+    1. 实际的算法引用在父类中进行
+    """
     def __init__(self, config):
         super(MPERunner, self).__init__(config)
        
     def run(self):
+        """
+        训练步骤(主要):
+        1. num_env_steps -> episodes
+                |
+        2. 由buffer中的数据生成动作
+                |
+        3. 将生成的动作输入环境进行交互，得到新的数据
+                |
+        4. 将新的数据存入buffer中      
+                |
+        5. eval_policy  
+        """
         self.warmup()   
 
         start = time.time()
+        # 输入的是num_env_step，但将其转化为episodes运行
         episodes = int(self.num_env_steps) // self.episode_length // self.n_rollout_threads
 
         for episode in range(episodes):
@@ -33,7 +57,7 @@ class MPERunner(Runner):
                 values, actions, action_log_probs, rnn_states, rnn_states_critic, actions_env = self.collect(step)
                     
                 # Obser reward and next obs
-                obs, rewards, dones, infos = self.envs.step(actions_env)
+                obs, rewards, dones, infos = self.envs.step(actions_env)  # 将上面收集到的动作输入envs.step
 
                 data = obs, rewards, dones, infos, values, actions, action_log_probs, rnn_states, rnn_states_critic 
                 
@@ -80,6 +104,10 @@ class MPERunner(Runner):
                 self.eval(total_num_steps)
 
     def warmup(self):
+        """
+        Reset env. 确定是否使用中心化训练模式(默认使用)，
+        TODO: 中心化训练模式不和MAPPO/IPPO等同
+        """
         # reset env
         obs = self.envs.reset()
 
@@ -96,6 +124,15 @@ class MPERunner(Runner):
 
     @torch.no_grad()
     def collect(self, step):
+        """
+        收集动作，通过buffer中的数据收集
+
+        atr:
+        1. prep_rollout:
+        - self.policy.actor.eval()
+        - self.policy.critic.eval()
+        2. _t2n: tensor -> np
+        """
         values = []
         actions = []
         temp_actions_env = []
@@ -114,7 +151,7 @@ class MPERunner(Runner):
             # [agents, envs, dim]
             values.append(_t2n(value))
             action = _t2n(action)
-            # rearrange action
+            # rearrange action，重新排列动作，TODO: 意义不明
             if self.envs.action_space[agent_id].__class__.__name__ == 'MultiDiscrete':
                 for i in range(self.envs.action_space[agent_id].shape):
                     uc_action_env = np.eye(self.envs.action_space[agent_id].high[i]+1)[action[:, i]]
@@ -150,6 +187,12 @@ class MPERunner(Runner):
         return values, actions, action_log_probs, rnn_states, rnn_states_critic, actions_env
 
     def insert(self, data):
+        """
+        atr:
+        1. masks: 
+        denotes points at which RNN states should be reset.
+        - TODO: masks似乎只用在RNN的states上
+        """
         obs, rewards, dones, infos, values, actions, action_log_probs, rnn_states, rnn_states_critic = data
 
         rnn_states[dones == True] = np.zeros(((dones == True).sum(), self.recurrent_N, self.hidden_size), dtype=np.float32)

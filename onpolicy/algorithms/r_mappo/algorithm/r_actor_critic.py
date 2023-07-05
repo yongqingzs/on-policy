@@ -16,6 +16,20 @@ class R_Actor(nn.Module):
     :param obs_space: (gym.Space) observation space.
     :param action_space: (gym.Space) action space.
     :param device: (torch.device) specifies the device to run on (cpu/gpu).
+
+    atr:
+    1. args:
+    - gain: by default 0.01, use the gain # of last action layer.
+    - use_orthogonal: 正交初始化
+    - use_policy_active_masks:
+    by default True, whether to mask useless data in policy loss
+    - use_naive_recurrent_policy: 
+    Whether to use a naive recurrent policy
+    - use_recurrent_policy: 
+    by default, use Recurrent Policy. If set, do not use.
+    - recurrent_N:
+    The number of recurrent layers ( default 1).
+    2. tqdv:dict，TODO: 功能未知
     """
     def __init__(self, args, obs_space, action_space, device=torch.device("cpu")):
         super(R_Actor, self).__init__()
@@ -30,7 +44,7 @@ class R_Actor(nn.Module):
         self.tpdv = dict(dtype=torch.float32, device=device)
 
         obs_shape = get_shape_from_obs_space(obs_space)
-        base = CNNBase if len(obs_shape) == 3 else MLPBase
+        base = CNNBase if len(obs_shape) == 3 else MLPBase  # obs: rgb
         self.base = base(args, obs_shape)
 
         if self._use_naive_recurrent_policy or self._use_recurrent_policy:

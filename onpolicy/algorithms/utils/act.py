@@ -5,6 +5,7 @@ import torch.nn as nn
 class ACTLayer(nn.Module):
     """
     MLP Module to compute actions.
+    该层和隐藏层衔接，用于计算动作
     :param action_space: (gym.Space) action space.
     :param inputs_dim: (int) dimension of network input.
     :param use_orthogonal: (bool) whether to use orthogonal initialization.

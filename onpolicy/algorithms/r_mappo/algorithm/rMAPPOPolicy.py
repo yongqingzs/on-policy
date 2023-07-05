@@ -12,6 +12,12 @@ class R_MAPPOPolicy:
     :param cent_obs_space: (gym.Space) value function input space (centralized input for MAPPO, decentralized for IPPO).
     :param action_space: (gym.Space) action space.
     :param device: (torch.device) specifies the device to run on (cpu/gpu).
+
+    atr:
+    1. args:
+    - gain: by default 0.01, use the gain # of last action layer
+    2. actor: obs_space
+    3. critic: share_obs_space
     """
 
     def __init__(self, args, obs_space, cent_obs_space, act_space, device=torch.device("cpu")):

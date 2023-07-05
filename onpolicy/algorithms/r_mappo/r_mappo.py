@@ -11,6 +11,38 @@ class R_MAPPO():
     :param args: (argparse.Namespace) arguments containing relevant model, policy, and env information.
     :param policy: (R_MAPPO_Policy) policy to update.
     :param device: (torch.device) specifies the device to run on (cpu/gpu).
+
+    atr:
+    1. policy: 由外部base_runner加载得到，
+    来自rMAPPOPolicy
+    2. args:
+    - clip_param: ppo clip parameter
+    - ppo_epoch: number of ppo epochs
+    - num_mini_batch: number of batches for ppo
+    - data_chunk_length: 
+    Time length of chunks used to train a recurrent_policy, default 10.
+    - value_loss_coef: value loss coefficient
+    - entropy_coef: entropy term coefficient (default: 0.01)
+    - max_grad_norm: max norm of gradients (default: 0.5)
+    - huber_delta: coefficient of huber loss. 
+    - use_recurrent_policy:
+    by default, use Recurrent Policy. If set, do not use.
+    - use_naive_recurrent_policy:
+    by default False, use the whole trajectory to calculate hidden states.
+    - use_max_grad_norm:
+    by default, use max norm of gradients. If set, do not use.
+    - use_clipped_value_loss:
+    by default, clip loss value. If set, do not clip loss value.
+    - use_huber_loss:
+    by default, use huber loss. If set, do not use huber loss.
+    - use_popart:
+    by default True, use PopArt to normalize rewards.
+    - use_valuenorm:
+    by default True, use running mean and std to normalize rewards.
+    - use_value_active_masks:
+    by default True, whether to mask useless data in value loss.  
+    - use_policy_active_masks:
+    by default True, whether to mask useless data in policy loss.
     """
     def __init__(self,
                  args,
@@ -42,7 +74,8 @@ class R_MAPPO():
         
         assert (self._use_popart and self._use_valuenorm) == False, ("self._use_popart and self._use_valuenorm can not be set True simultaneously")
         
-        if self._use_popart:
+        # norm reward的两种方式
+        if self._use_popart:  
             self.value_normalizer = self.policy.critic.v_out
         elif self._use_valuenorm:
             self.value_normalizer = ValueNorm(1).to(self.device)

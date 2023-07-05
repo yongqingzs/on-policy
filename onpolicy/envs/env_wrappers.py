@@ -125,10 +125,11 @@ class ShareVecEnv(ABC):
 
     @property
     def unwrapped(self):
-        if isinstance(self, VecEnvWrapper):
-            return self.venv.unwrapped
-        else:
-            return self
+        # if isinstance(self, VecEnvWrapper):  # 报错
+        #     return self.venv.unwrapped
+        # else:
+        #     return self
+        return self
 
     def get_viewer(self):
         if self.viewer is None:
@@ -657,8 +658,10 @@ class ChooseGuardSubprocVecEnv(ShareVecEnv):
         self.closed = True
 
 
-# single env
 class DummyVecEnv(ShareVecEnv):
+    """
+    Single env.
+    """
     def __init__(self, env_fns):
         self.envs = [fn() for fn in env_fns]
         env = self.envs[0]
