@@ -75,6 +75,13 @@ def main(args):
     """
     atr:
     1. runner: 实际训练使用的模块
+    - onpolicy.runner.shared.mpe_runner
+    - onpolicy.runner.separated.mpe_runner
+    2. args.share_policy:
+    by default True, all agents will share the same network; set to make training agents use different policies. 
+    - separated: runner.separated
+    - shared: runner.shared
+    - 除了mpe_runner外可以采用分开的policy外，其余runner均采用共享的policy
     """
     parser = get_config()
     all_args = parse_args(args, parser)

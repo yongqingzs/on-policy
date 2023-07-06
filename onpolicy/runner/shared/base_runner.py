@@ -2,7 +2,7 @@ import wandb
 import os
 import numpy as np
 import torch
-from tensorboardX import SummaryWriter
+from tensorboard import SummaryWriter  # tensorboardX -> tensorboard
 from onpolicy.utils.shared_buffer import SharedReplayBuffer
 
 def _t2n(x):
@@ -13,6 +13,9 @@ class Runner(object):
     """
     Base class for training recurrent policies.
     :param config: (dict) Config dictionary containing parameters for training.
+
+    atr:
+    1. policy: 对于所有agents，只有一个actor_critic
     """
     def __init__(self, config):
 
