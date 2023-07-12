@@ -2,7 +2,7 @@ import wandb
 import os
 import numpy as np
 import torch
-from tensorboard import SummaryWriter  # tensorboardX -> tensorboard
+from tensorboardX import SummaryWriter  # tensorboardX -> torch.utils.tensorboard
 from onpolicy.utils.shared_buffer import SharedReplayBuffer
 
 def _t2n(x):
@@ -16,7 +16,13 @@ class Runner(object):
 
     atr:
     1. policy: 对于所有agents，只有一个actor_critic
+    2. render_envs: 应该是render时使用，但是发现render时还是使用envs
+
+    修改:
+    1. 如果use_render，就不加载run_dir  
+    - ! shared这里和separated不一样  
     """
+    
     def __init__(self, config):
 
         self.all_args = config['all_args']
@@ -52,19 +58,27 @@ class Runner(object):
 
         # dir
         self.model_dir = self.all_args.model_dir
-
-        if self.use_wandb:
-            self.save_dir = str(wandb.run.dir)
-            self.run_dir = str(wandb.run.dir)
+        
+        if self.use_render:
+            # import imageio
+            # self.run_dir = config["run_dir"]
+            # self.gif_dir = str(self.run_dir / 'gifs')
+            # if not os.path.exists(self.gif_dir):
+            #     os.makedirs(self.gif_dir)
+            print('use_render')
         else:
-            self.run_dir = config["run_dir"]
-            self.log_dir = str(self.run_dir / 'logs')
-            if not os.path.exists(self.log_dir):
-                os.makedirs(self.log_dir)
-            self.writter = SummaryWriter(self.log_dir)
-            self.save_dir = str(self.run_dir / 'models')
-            if not os.path.exists(self.save_dir):
-                os.makedirs(self.save_dir)
+            if self.use_wandb:
+                self.save_dir = str(wandb.run.dir)
+                self.run_dir = str(wandb.run.dir)
+            else:
+                self.run_dir = config["run_dir"]
+                self.log_dir = str(self.run_dir / 'logs')
+                if not os.path.exists(self.log_dir):
+                    os.makedirs(self.log_dir)
+                self.writter = SummaryWriter(self.log_dir)
+                self.save_dir = str(self.run_dir / 'models')
+                if not os.path.exists(self.save_dir):
+                    os.makedirs(self.save_dir)
 
         from onpolicy.algorithms.r_mappo.r_mappo import R_MAPPO as TrainAlgo
         from onpolicy.algorithms.r_mappo.algorithm.rMAPPOPolicy import R_MAPPOPolicy as Policy

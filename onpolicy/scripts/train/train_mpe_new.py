@@ -10,7 +10,14 @@ import torch
 from onpolicy.envs.mpe.MPE_env import MPEEnv
 from onpolicy.envs.env_wrappers import SubprocVecEnv, DummyVecEnv
 
-"""Train script for MPEs."""
+"""
+Train script for MPEs.
+
+和train_mpe的区别:
+1. get_config()改为configs.base_config
+- 删除parse_args
+2. 将run_dir改为在runner/algo/.下
+"""
 
 def make_train_env(all_args):
     """
@@ -99,8 +106,9 @@ def main(args):
         torch.set_num_threads(all_args.n_training_threads)
 
     # run dir
-    run_dir = Path(os.path.split(os.path.dirname(os.path.abspath(__file__)))[
-                   0] + "/results") / all_args.env_name / all_args.scenario_name / all_args.algorithm_name / all_args.experiment_name
+    # run_dir = Path(os.path.split(os.path.dirname(os.path.abspath(__file__)))[
+                #    0] + "/results") / all_args.env_name / all_args.scenario_name / all_args.algorithm_name / all_args.experiment_name
+    run_dir = Path("./results") / all_args.env_name / all_args.scenario_name / all_args.algorithm_name / all_args.experiment_name
     if not run_dir.exists():
         os.makedirs(str(run_dir))
 

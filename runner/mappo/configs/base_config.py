@@ -153,86 +153,87 @@ class BaseConfig():
         --model_dir <str>
             by default None. set the path to pretrained model.
     """
+    
     def __init__(self) -> None:
         self.algorithm_name = 'mappo'  # "rmappo", "mappo"
         self.experiment_name = 'check'
-        self.seed = 1
+        self.seed = int(1)
         self.cuda = True
         self.cuda_deterministic = True
-        self.n_training_threads = 1
-        self.n_rollout_threads = 32
-        self.n_eval_rollout_threads = 1
-        self.n_render_rollout_threads = 1
-        self.num_env_steps = 10e6
+        self.n_training_threads = int(1)
+        self.n_rollout_threads = int(32)
+        self.n_eval_rollout_threads = int(1)
+        self.n_render_rollout_threads = int(1)
+        self.num_env_steps = int(10e6)
         self.user_name = 'marl'
         self.use_wandb = True
         # env parameters
         self.env_name = 'StarCraft2'
         self.use_obs_instead_of_state = False
         # replay buffer parameters
-        self.episode_length = 200
+        self.episode_length = int(200)
         # network parameters
         self.share_policy = True
         self.use_centralized_V = True
-        self.stacked_frames = 1
+        self.stacked_frames = int(1)
         self.use_stacked_frames = False
-        self.hidden_size = 64
-        self.layer_N = 1
+        self.hidden_size = int(64)
+        self.layer_N = int(1)
         self.use_ReLU = True
         self.use_popart = False
         self.use_valuenorm = True
         self.use_feature_normalization = True
         self.use_orthogonal = True
-        self.gain = 0.01
+        self.gain = float(0.01)
 
         # recurrent parameters
         self.use_naive_recurrent_policy = False
         self.use_recurrent_policy = True
-        self.recurrent_N = 1
-        self.data_chunk_length = 10
+        self.recurrent_N = int(1)
+        self.data_chunk_length = int(10)
 
         # optimizer parameters
-        self.lr = 5e-4
-        self.critic_lr = 5e-4
-        self.opti_eps = 1e-5
-        self.weight_decay = 0
+        self.lr = float(5e-4)
+        self.critic_lr = float(5e-4)
+        self.opti_eps = float(1e-5)
+        self.weight_decay = float(0)
 
         # ppo parameters
-        self.ppo_epoch = 15
+        self.ppo_epoch = int(15)
         self.use_clipped_value_loss = True
-        self.clip_param = 0.2
-        self.num_mini_batch = 1,
-        self.entropy_coef = 0.01,
-        self.value_loss_coef = 1
+        self.clip_param = float(0.2)
+        self.num_mini_batch = int(1)
+        self.entropy_coef = float(0.01)
+        self.value_loss_coef = float(1)
         self.use_max_grad_norm = True
-        self.max_grad_norm = 10.0,
+        self.max_grad_norm = float(10.0)
         self.use_gae = True
-        self.gamma = 0.99,
-        self.gae_lambda = 0.95,
+        self.gamma = float(0.99)
+        self.gae_lambda = float(0.95)
         self.use_proper_time_limits = False
         self.use_huber_loss = True
         self.use_value_active_masks = True
         self.use_policy_active_masks = True
-        self.huber_delta = 10.0
+        self.huber_delta = float(10.0)
 
         # run parameters
         self.use_linear_lr_decay = False
         # save parameters
-        self.save_interval = 1
+        self.save_interval = int(1)
 
         # log parameters
-        self.log_interval = 5
+        self.log_interval = int(5)
 
         # eval parameters
         self.use_eval = False
-        self.eval_interval = 25
-        self.eval_episodes = 32
+        self.eval_interval = int(25)
+        self.eval_episodes = int(32)
         
         # render parameters
         self.save_gifs = False
         self.use_render = False
-        self.render_episodes = 5
-        self.ifi = 0.1
+        self.render_episodes = int(5)
+        self.ifi = float(0.1)
 
         # pretrained parameters
         self.model_dir = None

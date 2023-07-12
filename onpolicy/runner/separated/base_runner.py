@@ -5,7 +5,7 @@ import os
 import numpy as np
 from itertools import chain
 import torch
-from tensorboard import SummaryWriter  # TODO: tensorboardX -> tensorboard
+from tensorboardX import SummaryWriter  # TODO: tensorboardX -> tensorboard
 
 from onpolicy.utils.separated_buffer import SeparatedReplayBuffer
 from onpolicy.utils.util import update_linear_schedule
@@ -14,6 +14,11 @@ def _t2n(x):
     return x.detach().cpu().numpy()
 
 class Runner(object):
+    """
+    修改:
+    1. 如果use_render，就不加载run_dir    
+    """
+
     def __init__(self, config):
 
         self.all_args = config['all_args']
@@ -48,11 +53,12 @@ class Runner(object):
         self.model_dir = self.all_args.model_dir
 
         if self.use_render:
-            import imageio
-            self.run_dir = config["run_dir"]
-            self.gif_dir = str(self.run_dir / 'gifs')
-            if not os.path.exists(self.gif_dir):
-                os.makedirs(self.gif_dir)
+            # import imageio
+            # self.run_dir = config["run_dir"]
+            # self.gif_dir = str(self.run_dir / 'gifs')
+            # if not os.path.exists(self.gif_dir):
+            #     os.makedirs(self.gif_dir)
+            print('use_render')
         else:
             if self.use_wandb:
                 self.save_dir = str(wandb.run.dir)
